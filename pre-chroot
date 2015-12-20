@@ -49,10 +49,11 @@ make_fs() {
 
 mount_fs() {
     echo 'Mounting Filesystems in /mnt/gentoo'
-    mkdir -p /mnt/gentoo/{boot,var,usr,tmp,home}
+    mkdir -p /mnt/gentoo
     mkswap /dev/sda2
     swapon /dev/sda2
     mount /dev/sda3 /mnt/gentoo/
+    mkdir -p /mnt/gentoo/{boot,var,usr,tmp,home}
     mount /dev/sda1 /mnt/gentoo/boot
     mount /dev/sda4 /mnt/gentoo/var
     mount /dev/sda5 /mnt/gentoo/usr
