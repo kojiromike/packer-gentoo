@@ -5,7 +5,7 @@ main() {
     partition
     make_fs
     mount_fs
-    unpack_base
+    ( cd /mnt/gentoo && unpack_base )
 }
 
 unpack_base() {
@@ -26,7 +26,7 @@ unpack_base() {
     sha256sum -c "${build_file}.DIGESTS.asc" ||
     sha1sum -c "${build_file}.DIGESTS.asc"
     
-    tar -xv -C /mnt/gentoo -f "$build_file"
+    tar -xv -f "$build_file"
 }
 
 partition() {
