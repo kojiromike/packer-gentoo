@@ -10,23 +10,23 @@ main() {
 
 unpack_base() {
     local base_url='http://gentoo.mirrors.pair.com/releases/amd64/autobuilds'
-    local iso_path
-    local iso_file
-    wget "${base_url}/latest-stage3-amd64-nomultilib.txt"
-    iso_path=$(grep -v '^#' latest-stage3-amd64-nomultilib.txt)
-    iso_path="${iso_path%% *}"
-    iso_file="${iso_path##*/}"
+    local build_path
+    local build_file
+    wget --no-verbose "${base_url}/latest-stage3-amd64-nomultilib.txt"
+    build_path=$(grep -v '^#' latest-stage3-amd64-nomultilib.txt)
+    build_path="${build_path%% *}"
+    build_file="${build_path##*/}"
 
-    wget "${base_url}/${iso_path}.DIGESTS.asc"
-    wget "${base_url}/${iso_path}"
+    wget --no-verbose "${base_url}/${build_path}.DIGESTS.asc"
+    wget --no-verbose "${base_url}/${build_path}"
 
     gpg --import /autobuild_rsa.pub
-    gpg --verify "${iso_file}.DIGESTS.asc"
-    sha512sum -c "${iso_file}.DIGESTS.asc" ||
-    sha256sum -c "${iso_file}.DIGESTS.asc" ||
-    sha1sum -c "${iso_file}.DIGESTS.asc"
+    gpg --verify "${build_file}.DIGESTS.asc"
+    sha512sum -c "${build_file}.DIGESTS.asc" ||
+    sha256sum -c "${build_file}.DIGESTS.asc" ||
+    sha1sum -c "${build_file}.DIGESTS.asc"
     
-    tar -xv -C /mnt/gentoo -f "$iso_file"
+    tar -xv -C /mnt/gentoo -f "$build_file"
 }
 
 partition() {
