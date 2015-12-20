@@ -1,0 +1,64 @@
+#!/bin/bash -xe
+
+main() {
+    echo 'Executing pre-chroot script'
+    partition
+    make_fs
+    mount_fs
+    unpack_base
+}
+
+unpack_base() {
+    local base_url='http://gentoo.mirrors.pair.com/releases/amd64/autobuilds'
+    local iso_path
+    local iso_file
+    wget "${base_url}/latest-stage3-amd64-nomultilib.txt"
+    iso_path=$(grep -v '^#' latest-stage3-amd64-nomultilib.txt)
+    iso_path="${iso_path%% *}"
+    iso_file="${iso_path##*/}"
+
+    wget "${base_url}/${iso_path}.DIGESTS.asc"
+    wget "${base_url}/${iso_path}"
+
+    gpg --import /autobuild_rsa.pub
+    gpg --verify "${iso_file}.DIGESTS.asc"
+    sha512sum -c "${iso_file}.DIGESTS.asc" ||
+    sha256sum -c "${iso_file}.DIGESTS.asc" ||
+    sha1sum -c "${iso_file}.DIGESTS.asc"
+    
+    tar -xv -C /mnt/gentoo -f "$iso_file"
+}
+
+partition() {
+    echo 'Partitioning Filesystems'
+    declare -i current=1
+    parted -a opt -s /dev/sda -- "mklabel gpt"
+    parted -a opt -s /dev/sda -- "mkpart BOOT ext4       $(( current ))  $(( current += 128   ))m"
+    parted -a opt -s /dev/sda -- "mkpart SWAP linux-swap $(( current ))m $(( current += 4096  ))m"
+    parted -a opt -s /dev/sda -- "mkpart ROOT ext4       $(( current ))m $(( current += 2048  ))m"
+    parted -a opt -s /dev/sda -- "mkpart VAR  ext4       $(( current ))m $(( current += 8192  ))m"
+    parted -a opt -s /dev/sda -- "mkpart USR  ext4       $(( current ))m $(( current += 12288 ))m"
+    parted -a opt -s /dev/sda -- "mkpart TMP  ext4       $(( current ))m $(( current += 4096  ))m"
+    parted -a opt -s /dev/sda -- "mkpart HOME ext4       $(( current )) -1"
+}
+
+make_fs() {
+    echo 'Formatting Filesystems'
+    echo /dev/sda[0-9]* | xargs -n1 -- mkfs -t ext4
+}
+
+mount_fs() {
+    echo 'Mounting Filesystems in /mnt/gentoo'
+    mkdir -p /mnt/gentoo/{boot,var,usr,tmp,home}
+    mkswap /dev/sda2
+    swapon /dev/sda2
+    mount /dev/sda3 /mnt/gentoo/
+    mount /dev/sda1 /mnt/gentoo/boot
+    mount /dev/sda4 /mnt/gentoo/var
+    mount /dev/sda5 /mnt/gentoo/usr
+    mount /dev/sda6 /mnt/gentoo/tmp
+    mount /dev/sda7 /mnt/gentoo/home
+}
+
+main "$@"
+sleep 10000

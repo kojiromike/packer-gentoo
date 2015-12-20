@@ -1,1 +1,40 @@
-{}
+{
+    "builders": [{
+        "type": "virtualbox-iso",
+        "guest_os_type": "Gentoo_64",
+        "iso_url": "http://distfiles.gentoo.org/releases/amd64/autobuilds/20150924/install-amd64-minimal-20150924.iso",
+        "iso_checksum": "075212e58ddec6ef04791fc90c573c450b24b34ae38eccaf29cc6c17b7436148e4ef4f133cf48d84aa597e02117b3bda7086d2a7176224c208f71dba2622a913",
+        "iso_checksum_type": "sha512",
+        "ssh_username": "root",
+        "ssh_password": "root",
+        "shutdown_command": "shutdown -h now",
+        "boot_wait": "3s",
+        "boot_command": [
+            "gentoo-nofb<enter>",
+            "<wait><wait><wait>",
+            "<enter>",
+            "<wait10><wait><wait>",
+            "passwd<enter>",
+            "root<enter>",
+            "root<enter>",
+            "echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config<enter>",
+            "service sshd start<enter>"
+        ]
+    }],
+    "provisioners": [{
+        "type": "file",
+        "source": "keys/autobuild_rsa.pub",
+        "destination": "/autobuild_rsa.pub"
+    }, {
+        "type": "shell",
+        "scripts": [
+            "pre-chroot",
+            "in-chroot",
+            "post-chroot"
+        ]
+    }],
+    "post-processors": [{
+        "type": "vagrant",
+        "compression_level": 9
+    }]
+}
