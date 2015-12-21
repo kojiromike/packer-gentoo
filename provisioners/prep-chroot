@@ -49,7 +49,7 @@ unpack() {
     gpg --import /snapshot_rsa.pub
     wget --no-verbose "${snapshot_url}/${snapshot_file}.gpgsig"
     wget --no-verbose "${snapshot_url}/${snapshot_file}.md5sum"
-    if [[ ! -s "$snapshot_file" ]]; then
+    if ! { [[ -s "$snapshot_file" ]] && gpg --verify "${snapshot_file}.gpgsig" "$snapshot_file"; } then
         rm -f "$snapshot_file"
         wget --no-verbose "${snapshot_url}/${snapshot_file}"
     fi
