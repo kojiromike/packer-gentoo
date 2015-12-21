@@ -1,0 +1,28 @@
+#!/bin/sh -xe
+
+main() {
+    echo 'Executing in-chroot script'
+    emerge-webrsync
+    emerge sys-kernel/gentoo-sources
+    emerge sys-boot/grub
+    (
+        cd /usr/src/linux
+        install_kernel
+    )
+    useradd -g users -G wheel,portage,audio,video,usb,cdrom -m vagrant
+    passwd root
+    passwd vagrant
+}
+install_kernel() {
+    local -x MAKE_OPTS='sj4'
+    sleep 10000
+    make localyesconfig
+    make
+    make install
+    make modules_install
+    grub2-install /dev/sda
+    grub2-mkconfig -o /boot/grub/grub.cfg
+}
+
+main "$@"
+sleep 60

@@ -27,11 +27,38 @@
         "destination": "/autobuild_rsa.pub"
     }, {
         "type": "shell",
-        "scripts": [
-            "pre-chroot",
-            "in-chroot",
-            "post-chroot"
-        ]
+        "script": "provisioners/prep-filesystem"
+    }, {
+        "type": "file",
+        "source": "packer_cache/build_tarball.tbz",
+        "destination": "/mnt/gentoo/build_tarball.tbz"
+    }, {
+        "type": "shell",
+        "script": "provisioners/prep-chroot"
+    }, {
+        "type": "file",
+        "direction": "download",
+        "source": "/mnt/gentoo/build_tarball.tbz",
+        "destination": "packer_cache/build_tarball.tbz"
+    }, {
+        "type": "file",
+        "source": "provisioners/fstab",
+        "destination": "/mnt/gentoo/etc/fstab"
+    }, {
+        "type": "file",
+        "source": "provisioners/make.conf",
+        "destination": "/mnt/gentoo/etc/portage/make.conf"
+    }, {
+        "type": "file",
+        "source": "provisioners/02locale",
+        "destination": "/mnt/gentoo/etc/env.d/02locale"
+    }, {
+        "type": "shell",
+        "script": "provisioners/in-chroot",
+        "execute_command": "chmod +x {{.Path}}; {{.Vars}} chroot /mnt/gentoo /bin/bash -xe < {{.Path}}"
+    }, {
+        "type": "shell",
+        "script": "provisioners/post-chroot"
     }],
     "post-processors": [{
         "type": "vagrant",

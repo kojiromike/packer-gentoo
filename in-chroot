@@ -1,5 +1,0 @@
-#!/bin/sh -e
-
-echo 'Executing in-chroot script'
-
-sleep 10000

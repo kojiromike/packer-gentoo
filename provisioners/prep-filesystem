@@ -1,46 +1,13 @@
 #!/bin/bash -xe
 
 main() {
-    echo 'Executing pre-chroot script'
-    partition
-    make_fs
-    mount_fs
-    (
-        cd /mnt/gentoo
-        unpack_base
-        prep_chroot
-    )
+    echo 'Preparing Filesystem to Install Gentoo'
+    _partition
+    _format
+    _mount
 }
 
-prep_chroot() {
-    mount -t proc none proc
-    mount --rbind /sys sys
-    mount --rbind /dev dev
-    cp /etc/resolv.conf etc
-}
-
-unpack_base() {
-    local base_url='http://gentoo.mirrors.pair.com/releases/amd64/autobuilds'
-    local build_path
-    local build_file
-    wget --no-verbose "${base_url}/latest-stage3-amd64-nomultilib.txt"
-    build_path=$(grep -v '^#' latest-stage3-amd64-nomultilib.txt)
-    build_path="${build_path%% *}"
-    build_file="${build_path##*/}"
-
-    wget --no-verbose "${base_url}/${build_path}.DIGESTS.asc"
-    wget --no-verbose "${base_url}/${build_path}"
-
-    gpg --import /autobuild_rsa.pub
-    gpg --verify "${build_file}.DIGESTS.asc"
-    sha512sum -c "${build_file}.DIGESTS.asc" ||
-    sha256sum -c "${build_file}.DIGESTS.asc" ||
-    sha1sum -c "${build_file}.DIGESTS.asc"
-    
-    tar -xv -f "$build_file"
-}
-
-partition() {
+_partition() {
     echo 'Partitioning Filesystems'
     declare -i current=1
     parted -a opt -s /dev/sda -- "mklabel gpt"
@@ -53,12 +20,12 @@ partition() {
     parted -a opt -s /dev/sda -- "mkpart HOME ext4       $(( current )) -1"
 }
 
-make_fs() {
+_format() {
     echo 'Formatting Filesystems'
     echo /dev/sda[0-9]* | xargs -n1 -- mkfs -t ext4
 }
 
-mount_fs() {
+_mount() {
     echo 'Mounting Filesystems in /mnt/gentoo'
     mkdir -p /mnt/gentoo
     mkswap /dev/sda2
@@ -66,11 +33,12 @@ mount_fs() {
     mount /dev/sda3 /mnt/gentoo/
     mkdir -p /mnt/gentoo/{boot,var,usr,tmp,home}
     mount /dev/sda1 /mnt/gentoo/boot
+    mkdir -p /mnt/gentoo/boot/grub
     mount /dev/sda4 /mnt/gentoo/var
     mount /dev/sda5 /mnt/gentoo/usr
+    mkdir -p /mnt/gentoo/usr/portage
     mount /dev/sda6 /mnt/gentoo/tmp
     mount /dev/sda7 /mnt/gentoo/home
 }
 
 main "$@"
-sleep 10000

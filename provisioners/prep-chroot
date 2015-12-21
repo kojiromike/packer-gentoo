@@ -1,0 +1,55 @@
+#!/bin/bash -xe
+
+main() {
+    local guide_file='latest-stage3-amd64-nomultilib.txt'
+    local base_url='http://gentoo.mirrors.pair.com/releases/amd64/autobuilds'
+    local build_path
+    local build_file
+    echo 'Preparing Chroot to Install Gentoo'
+    cd /mnt/gentoo
+    if ! validate; then
+        fetch
+        # Validate again after fetching
+        validate || sleep 10000
+    fi
+    unpack
+    prep
+}
+
+##
+# Validate a pre-fetched build tarball
+# so we don't have to wait for a long download
+validate() {
+    wget --no-verbose "${base_url}/${guide_file}"
+    build_path=$(awk '!/^#/{print $1;exit;}' "$guide_file")
+    build_file="${build_path##*/}"
+    wget --no-verbose "${base_url}/${build_path}.DIGESTS.asc"
+    gpg --import /autobuild_rsa.pub
+    ##
+    # The above part only needs to run once.
+    validate() {
+        [[ -s build_tarball.tbz ]] || return
+        ln -sf build_tarball.tbz "$build_file"
+        gpg --verify "${build_file}.DIGESTS.asc"
+        grep -A1 SHA512 "${build_file}.DIGESTS.asc" | grep "${build_file}\$" | sha512sum -c
+    }
+    validate "$@"
+}
+
+fetch() {
+    wget --no-verbose -O build_tarball.tbz "${base_url}/${build_path}"
+}
+
+unpack() {
+    echo 'Extracting Tarball (takes some time)'
+    tar -xf build_tarball.tbz
+}
+
+prep() {
+    mount -t proc none proc
+    mount --rbind /sys sys
+    mount --rbind /dev dev
+    cp /etc/resolv.conf etc
+}
+
+main "$@"

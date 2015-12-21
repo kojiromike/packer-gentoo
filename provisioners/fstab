@@ -1,0 +1,9 @@
+/dev/sda1       /boot       ext4        noauto,noatime  1 2
+/dev/sda2       none        swap        sw              0 0
+/dev/sda3       /           ext4        noatime         0 1
+/dev/sda4       /var        ext4        noatime         0 1
+/dev/sda5       /usr        ext4        noatime         0 1
+/dev/sda6       /tmp        ext4        noatime         0 1
+/dev/sda7       /home       ext4        noatime         0 1
+
+/dev/cdrom      /mnt/cdrom  auto        noauto,ro   0 0
