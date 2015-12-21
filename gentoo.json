@@ -14,17 +14,21 @@
             "<wait><wait><wait>",
             "<enter>",
             "<wait10><wait><wait>",
-            "passwd<enter>",
+            "passwd;",
+            "echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config;",
+            "service sshd start<enter>",
             "root<enter>",
-            "root<enter>",
-            "echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config<enter>",
-            "service sshd start<enter>"
+            "root<enter>"
         ]
     }],
     "provisioners": [{
         "type": "file",
         "source": "keys/autobuild_rsa.pub",
         "destination": "/autobuild_rsa.pub"
+    }, {
+        "type": "file",
+        "source": "keys/snapshot_rsa.pub",
+        "destination": "/snapshot_rsa.pub"
     }, {
         "type": "shell",
         "script": "provisioners/prep-filesystem"
@@ -33,6 +37,10 @@
         "source": "packer_cache/build_tarball.tbz",
         "destination": "/mnt/gentoo/build_tarball.tbz"
     }, {
+        "type": "file",
+        "source": "packer_cache/portage-latest.tar.xz",
+        "destination": "/mnt/gentoo/portage-latest.tar.xz"
+    }, {
         "type": "shell",
         "script": "provisioners/prep-chroot"
     }, {
@@ -40,6 +48,11 @@
         "direction": "download",
         "source": "/mnt/gentoo/build_tarball.tbz",
         "destination": "packer_cache/build_tarball.tbz"
+    }, {
+        "type": "file",
+        "direction": "download",
+        "source": "/mnt/gentoo/portage-latest.tar.xz",
+        "destination": "packer_cache/portage-latest.tar.xz"
     }, {
         "type": "file",
         "source": "provisioners/fstab",

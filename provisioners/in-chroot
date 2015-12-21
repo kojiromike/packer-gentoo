@@ -2,9 +2,9 @@
 
 main() {
     echo 'Executing in-chroot script'
-    emerge-webrsync
+    emerge --sync
     emerge sys-kernel/gentoo-sources
-    emerge sys-boot/grub
+#    emerge sys-boot/grub
     (
         cd /usr/src/linux
         install_kernel
