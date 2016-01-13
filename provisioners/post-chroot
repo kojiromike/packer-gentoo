@@ -1,5 +1,15 @@
-#!/bin/sh -e
+#!/bin/sh -xe
 
-echo 'Executing post-chroot script'
-
-sleep 10000
+main() {
+    echo 'Executing post-chroot script'
+    unmount_gentoo_root
+    reboot
+}
+unmount_gentoo_root() {
+    local dir
+    for dir in boot dev home proc sys tmp usr var; do
+        umount "/mnt/gentoo/$dir"
+    done
+    umount /mnt/gentoo
+}
+main "$@"

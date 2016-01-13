@@ -72,6 +72,18 @@
     }, {
         "type": "shell",
         "script": "provisioners/post-chroot"
+    }, {
+        "type": "shell",
+        "script": "provisioners/post-reboot",
+        "pause_before": "30s"
+    }, {
+        "type": "file",
+        "source": "provisioners/sudoers",
+        "destination": "/etc/sudoers.d/vagrant"
+    }, {
+        "type": "shell",
+        "script": "provisioners/virtualbox-tools",
+        "only": ["virtualbox-iso"]
     }],
     "post-processors": [{
         "type": "vagrant",

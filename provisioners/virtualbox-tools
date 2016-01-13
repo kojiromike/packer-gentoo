@@ -1,0 +1,10 @@
+#!/bin/sh -xe
+
+main() {
+    echo 'Executing virtualbox-tools script'
+    echo 'app-emulation/virtualbox-guest-additions' >> /etc/portage/package.unmask
+    emerge app-emulation/virtualbox-guest-additions
+    gpasswd -a vagrant vboxusers
+    echo 'modules="vboxdrv vboxnetadp vboxnetflt"' >> /etc/conf.d/modules
+}
+main "$@"

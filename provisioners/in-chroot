@@ -3,26 +3,31 @@
 main() {
     echo 'Executing in-chroot script'
     emerge --sync
-    emerge sys-kernel/gentoo-sources
-#    emerge sys-boot/grub
-    (
-        cd /usr/src/linux
-        install_kernel
-    )
-    useradd -g users -G wheel,portage,audio,video,usb,cdrom -m vagrant
-    passwd root
-    passwd vagrant
+    ( install_kernel )
+    install_boot
+    setup_users
 }
 install_kernel() {
     local -x MAKE_OPTS='sj4'
-    sleep 10000
-    make localyesconfig
+    emerge sys-kernel/gentoo-sources
+    cd /usr/src/linux
+    zcat /proc/config.gz > .config
+    make oldconfig < /dev/null
     make
     make install
     make modules_install
+}
+install_boot() {
+    emerge sys-boot/grub
     grub2-install /dev/sda
     grub2-mkconfig -o /boot/grub/grub.cfg
 }
+setup_users() {
+    useradd -g users -G wheel,portage,audio,video,usb,cdrom -m vagrant
+    {
+        echo 'root:vagrant'
+        echo 'vagrant:vagrant'
+    } | chpasswd
+}
 
 main "$@"
-sleep 60
