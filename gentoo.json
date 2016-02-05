@@ -1,6 +1,7 @@
 {
   "variables": {
     "build_tarball": null,
+    "distfiles_tarball": null,
     "iso_checksum": null,
     "iso_file": null,
     "portage_tarball": null
@@ -70,6 +71,19 @@
     "type": "file",
     "source": "provisioners/02locale",
     "destination": "/mnt/gentoo/etc/env.d/02locale"
+  }, {
+    "type": "file",
+    "source": "{{ user `distfiles_tarball` }}",
+    "destination": "/mnt/gentoo/distfiles.tar"
+  }, {
+    "type": "shell",
+    "script": "provisioners/emerge-deps",
+    "execute_command": "chmod +x {{.Path}}; {{.Vars}} chroot /mnt/gentoo /bin/bash -xe < {{.Path}}"
+  }, {
+    "type": "file",
+    "direction": "download",
+    "source": "/mnt/gentoo/distfiles.tar",
+    "destination": "{{ user `distfiles_tarball` }}"
   }, {
     "type": "shell",
     "script": "provisioners/in-chroot",

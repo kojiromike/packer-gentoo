@@ -1,0 +1,12 @@
+#!/bin/sh -xe
+
+main() {
+    echo 'Emerging dependencies'
+    cd /usr/portage
+    tar -xf /distfiles.tar
+    emerge sys-kernel/gentoo-sources
+    emerge sys-boot/grub
+    tar -cf /distfiles.tar distfiles
+}
+
+main "$@"

@@ -15,6 +15,9 @@ clean:
 	rm -f stage3-amd64-hardened+nomultilib-latest.tar.bz2
 	rm -f stage3-amd64-hardened+nomultilib-latest.tar.bz2.DIGESTS.asc
 
+distfiles.tar:
+	tar -cJf distfiles.tar -T /dev/null
+
 portage-latest.tar.xz: portage-latest.tar.xz.gpgsig
 	curl -sSLO http://distfiles.gentoo.org/releases/snapshots/current/$@
 	gpg --verify $@.gpgsig $@
@@ -34,8 +37,8 @@ stage3-amd64-hardened+nomultilib-latest.tar.bz2.DIGESTS.asc: latest-stage3-amd64
 latest-stage3-amd64-hardened+nomultilib.txt:
 	curl -sSLO $(BASE_URL)/$@
 
-packer-gentoo-hardened.box: install-amd64-minimal-latest.iso install-amd64-minimal-latest.iso.DIGESTS.asc stage3-amd64-hardened+nomultilib-latest.tar.bz2 portage-latest.tar.xz
-	packer build -var iso_file=$< -var iso_checksum=$(shell awk '/install-amd64/{print $$1;exit}' install-amd64-minimal-latest.iso.DIGESTS.asc) -var build_tarball=stage3-amd64-hardened+nomultilib-latest.tar.bz2 -var portage_tarball=portage-latest.tar.xz gentoo.json
+packer-gentoo-hardened.box: install-amd64-minimal-latest.iso install-amd64-minimal-latest.iso.DIGESTS.asc stage3-amd64-hardened+nomultilib-latest.tar.bz2 portage-latest.tar.xz distfiles.tar
+	packer build -var distfiles_tarball=distfiles.tar -var iso_file=$< -var iso_checksum=$(shell awk '/install-amd64/{print $$1;exit}' install-amd64-minimal-latest.iso.DIGESTS.asc) -var build_tarball=stage3-amd64-hardened+nomultilib-latest.tar.bz2 -var portage_tarball=portage-latest.tar.xz gentoo.json
 
 install-amd64-minimal-latest.iso: latest-iso.txt
 	curl -sSLO $(BASE_URL)/$(shell awk '/install-amd64/{print $$1}' $<)
