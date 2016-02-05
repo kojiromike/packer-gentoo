@@ -1,80 +1,85 @@
 {
-    "builders": [{
-        "type": "virtualbox-iso",
-        "guest_os_type": "Gentoo_64",
-        "iso_url": "http://distfiles.gentoo.org/releases/amd64/autobuilds/20150924/install-amd64-minimal-20150924.iso",
-        "iso_checksum": "075212e58ddec6ef04791fc90c573c450b24b34ae38eccaf29cc6c17b7436148e4ef4f133cf48d84aa597e02117b3bda7086d2a7176224c208f71dba2622a913",
-        "iso_checksum_type": "sha512",
-        "ssh_username": "root",
-        "ssh_password": "root",
-        "shutdown_command": "shutdown -h now",
-        "boot_wait": "3s",
-        "boot_command": [
-            "gentoo-nofb<enter>",
-            "<wait><wait><wait>",
-            "<enter>",
-            "<wait10><wait><wait>",
-            "passwd;",
-            "echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config;",
-            "service sshd start<enter>",
-            "root<enter>",
-            "root<enter>"
-        ]
-    }],
-    "provisioners": [{
-        "type": "file",
-        "source": "keys/autobuild_rsa.pub",
-        "destination": "/autobuild_rsa.pub"
-    }, {
-        "type": "file",
-        "source": "keys/snapshot_rsa.pub",
-        "destination": "/snapshot_rsa.pub"
-    }, {
-        "type": "shell",
-        "script": "provisioners/prep-filesystem"
-    }, {
-        "type": "file",
-        "source": "packer_cache/build_tarball.tbz",
-        "destination": "/mnt/gentoo/build_tarball.tbz"
-    }, {
-        "type": "file",
-        "source": "packer_cache/portage-latest.tar.xz",
-        "destination": "/mnt/gentoo/portage-latest.tar.xz"
-    }, {
-        "type": "shell",
-        "script": "provisioners/prep-chroot"
-    }, {
-        "type": "file",
-        "direction": "download",
-        "source": "/mnt/gentoo/build_tarball.tbz",
-        "destination": "packer_cache/build_tarball.tbz"
-    }, {
-        "type": "file",
-        "direction": "download",
-        "source": "/mnt/gentoo/portage-latest.tar.xz",
-        "destination": "packer_cache/portage-latest.tar.xz"
-    }, {
-        "type": "file",
-        "source": "provisioners/fstab",
-        "destination": "/mnt/gentoo/etc/fstab"
-    }, {
-        "type": "file",
-        "source": "provisioners/make.conf",
-        "destination": "/mnt/gentoo/etc/portage/make.conf"
-    }, {
-        "type": "file",
-        "source": "provisioners/02locale",
-        "destination": "/mnt/gentoo/etc/env.d/02locale"
-    }, {
-        "type": "shell",
-        "script": "provisioners/in-chroot",
-        "execute_command": "chmod +x {{.Path}}; {{.Vars}} chroot /mnt/gentoo /bin/bash -xe < {{.Path}}"
-    }, {
-        "type": "shell",
-        "script": "provisioners/post-chroot"
-    }],
-    "post-processors": [{
-        "type": "vagrant",
-        "compression_level": 9
-    }]
+  "variables": {
+    "build_tarball": null,
+    "iso_checksum": null,
+    "iso_file": null,
+    "portage_tarball": null
+  }, "builders": [{
+    "type": "virtualbox-iso",
+    "guest_os_type": "Gentoo_64",
+    "iso_url": "{{ user `iso_file` }}",
+    "iso_checksum": "{{ user `iso_checksum` }}",
+    "iso_checksum_type": "sha512",
+    "ssh_username": "root",
+    "ssh_password": "root",
+    "shutdown_command": "shutdown -h now",
+    "boot_wait": "3s",
+    "boot_command": [
+      "gentoo-nofb<enter>",
+      "<wait><wait><wait>",
+      "<enter>",
+      "<wait10><wait><wait>",
+      "passwd;",
+      "echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config;",
+      "service sshd start<enter>",
+      "root<enter>",
+      "root<enter>"
+    ]
+  }],
+  "provisioners": [{
+    "type": "file",
+    "source": "keys/autobuild_rsa.pub",
+    "destination": "/autobuild_rsa.pub"
+  }, {
+    "type": "file",
+    "source": "keys/snapshot_rsa.pub",
+    "destination": "/snapshot_rsa.pub"
+  }, {
+    "type": "shell",
+    "script": "provisioners/prep-filesystem"
+  }, {
+    "type": "file",
+    "source": "{{ user `build_tarball` }}",
+    "destination": "/mnt/gentoo/build_tarball.tbz"
+  }, {
+    "type": "file",
+    "source": "{{ user `portage_tarball` }}",
+    "destination": "/mnt/gentoo/portage-latest.tar.xz"
+  }, {
+    "type": "shell",
+    "script": "provisioners/prep-chroot"
+  }, {
+    "type": "file",
+    "direction": "download",
+    "source": "/mnt/gentoo/build_tarball.tbz",
+    "destination": "{{ user `build_tarball` }}"
+  }, {
+    "type": "file",
+    "direction": "download",
+    "source": "/mnt/gentoo/portage-latest.tar.xz",
+    "destination": "{{ user `portage_tarball` }}"
+  }, {
+    "type": "file",
+    "source": "provisioners/fstab",
+    "destination": "/mnt/gentoo/etc/fstab"
+  }, {
+    "type": "file",
+    "source": "provisioners/make.conf",
+    "destination": "/mnt/gentoo/etc/portage/make.conf"
+  }, {
+    "type": "file",
+    "source": "provisioners/02locale",
+    "destination": "/mnt/gentoo/etc/env.d/02locale"
+  }, {
+    "type": "shell",
+    "script": "provisioners/in-chroot",
+    "execute_command": "chmod +x {{.Path}}; {{.Vars}} chroot /mnt/gentoo /bin/bash -xe < {{.Path}}"
+  }, {
+    "type": "shell",
+    "script": "provisioners/post-chroot"
+  }],
+  "post-processors": [{
+    "type": "vagrant",
+    "compression_level": 9
+  }]
 }

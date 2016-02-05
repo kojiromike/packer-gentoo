@@ -1,67 +1,25 @@
 #!/bin/bash -xe
 
 main() {
-    local guide_file='latest-stage3-amd64-nomultilib.txt'
-    local base_url='http://gentoo.mirrors.pair.com/releases/amd64/autobuilds'
-    local snapshot_url='http://gentoo.mirrors.pair.com/snapshots'
-    local snapshot_file='portage-latest.tar.xz'
-    local build_path
-    local build_file
-    echo 'Preparing Chroot to Install Gentoo'
-    cd /mnt/gentoo
-    if ! validate; then
-        fetch
-        # Validate again after fetching
-        validate
-    fi
-    unpack
-    prep
-}
-
-##
-# Validate a pre-fetched build tarball
-# so we don't have to wait for a long download
-validate() {
-    gpg --import /autobuild_rsa.pub
-    wget --no-verbose "${base_url}/${guide_file}"
-    build_path=$(awk '!/^#/{print $1;exit;}' "$guide_file")
-    build_file="${build_path##*/}"
-    wget --no-verbose "${base_url}/${build_path}.DIGESTS.asc"
-    ##
-    # The above part only needs to run once.
-    validate() {
-        [[ -s build_tarball.tbz ]] || return
-        ln -sf build_tarball.tbz "$build_file"
-        gpg --verify "${build_file}.DIGESTS.asc"
-        grep -A1 SHA512 "${build_file}.DIGESTS.asc" | grep "${build_file}\$" | sha512sum -c
-    }
-    validate "$@"
-}
-
-fetch() {
-    wget --no-verbose -O build_tarball.tbz "${base_url}/${build_path}"
+  local snapshot_file='portage-latest.tar.xz'
+  echo 'Preparing Chroot to Install Gentoo'
+  cd /mnt/gentoo
+  unpack
+  prep
 }
 
 unpack() {
-    echo 'Extracting Build Tarball (takes some time)'
-    tar -xf build_tarball.tbz
-    echo 'Fetching and Extracting Portage Tarball (also takes some time)'
-    gpg --import /snapshot_rsa.pub
-    wget --no-verbose "${snapshot_url}/${snapshot_file}.gpgsig"
-    wget --no-verbose "${snapshot_url}/${snapshot_file}.md5sum"
-    if ! { [[ -s "$snapshot_file" ]] && gpg --verify "${snapshot_file}.gpgsig" "$snapshot_file"; } then
-        rm -f "$snapshot_file"
-        wget --no-verbose "${snapshot_url}/${snapshot_file}"
-    fi
-    gpg --verify "${snapshot_file}.gpgsig" "$snapshot_file"
-    md5sum -c "${snapshot_file}.md5sum" && tar -xf "$snapshot_file" -C '/mnt/gentoo/usr'
+  echo 'Extracting Build Tarball (takes some time)'
+  tar -xf build_tarball.tbz
+  echo 'Extracting Portage Tarball (also takes some time)'
+  tar -xf "$snapshot_file" -C '/mnt/gentoo/usr'
 }
 
 prep() {
-    mount -t proc none proc
-    mount --rbind /sys sys
-    mount --rbind /dev dev
-    cp /etc/resolv.conf etc
+  mount -t proc none proc
+  mount --rbind /sys sys
+  mount --rbind /dev dev
+  cp /etc/resolv.conf etc
 }
 
 main "$@"
