@@ -85,6 +85,10 @@
     "source": "/mnt/gentoo/distfiles.tar",
     "destination": "{{ user `distfiles_tarball` }}"
   }, {
+    "type": "file",
+    "source": "config",
+    "destination": "/mnt/gentoo/config"
+  }, {
     "type": "shell",
     "script": "provisioners/in-chroot",
     "execute_command": "chmod +x {{.Path}}; {{.Vars}} chroot /mnt/gentoo /bin/bash -xe < {{.Path}}"

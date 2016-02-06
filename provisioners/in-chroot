@@ -12,7 +12,8 @@ main() {
 }
 install_kernel() {
     local -x MAKE_OPTS='sj4'
-    make localyesconfig
+    cp /config .config
+    make oldconfig
     make
     make install
     make modules_install
