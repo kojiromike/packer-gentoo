@@ -11,6 +11,7 @@ _partition() {
     echo 'Partitioning Filesystems'
     declare -i current=1
     parted -a opt -s /dev/sda -- "mklabel gpt"
+    parted -a opt -s /dev/sda -- "mkpart BIOS ext4       $(( current ))  $(( current += 128   ))m"
     parted -a opt -s /dev/sda -- "mkpart BOOT ext4       $(( current ))  $(( current += 128   ))m"
     parted -a opt -s /dev/sda -- "mkpart SWAP linux-swap $(( current ))m $(( current += 4096  ))m"
     parted -a opt -s /dev/sda -- "mkpart ROOT ext4       $(( current ))m $(( current += 2048  ))m"
@@ -18,7 +19,8 @@ _partition() {
     parted -a opt -s /dev/sda -- "mkpart USR  ext4       $(( current ))m $(( current += 12288 ))m"
     parted -a opt -s /dev/sda -- "mkpart TMP  ext4       $(( current ))m $(( current += 4096  ))m"
     parted -a opt -s /dev/sda -- "mkpart HOME ext4       $(( current )) -1"
-    parted -a opt -s /dev/sda -- "set 1 boot on"
+    parted -a opt -s /dev/sda -- "set 1 bios_grub on"
+    parted -a opt -s /dev/sda -- "set 2 boot on"
 }
 
 _format() {
