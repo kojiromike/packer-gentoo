@@ -101,6 +101,11 @@
   }],
   "post-processors": [{
     "type": "vagrant",
-    "compression_level": 9
+    "compression_level": 9,
+    "output": "packer-gentoo-hardened.box"
+  }, {
+    "type": "compress",
+    "compression_level": 9,
+    "output": "packer-gentoo-hardened.tar.gz"
   }]
 }
