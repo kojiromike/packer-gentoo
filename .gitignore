@@ -8,3 +8,4 @@ portage-latest.tar.xz*
 stage3-amd64-hardened+nomultilib-*
 *.log
 *.box
+packer-gentoo-hardened.tar.gz
