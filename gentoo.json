@@ -11,6 +11,7 @@
     "iso_url": "{{ user `iso_file` }}",
     "iso_checksum": "{{ user `iso_checksum` }}",
     "iso_checksum_type": "sha512",
+    "headless": true,
     "ssh_username": "root",
     "ssh_password": "root",
     "shutdown_command": "shutdown -h now",
@@ -25,6 +26,8 @@
       "service sshd start<enter>",
       "root<enter>",
       "root<enter>"
+    ], "vboxmanage": [
+      ["modifyvm", "{{.Name}}", "--memory", "1024"]
     ]
   }],
   "provisioners": [{
