@@ -6,3 +6,5 @@ latest-iso.txt
 latest-stage3-amd64-hardened+nomultilib.txt
 portage-latest.tar.xz*
 stage3-amd64-hardened+nomultilib-*
+*.log
+*.box
