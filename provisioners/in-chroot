@@ -2,16 +2,13 @@
 
 main() {
     echo 'Executing in-chroot script'
-    (
-        cd /usr/src/linux
-        install_kernel
-    )
-    useradd -g users -G wheel,portage,audio,video,usb,cdrom -m vagrant
-    passwd root
-    passwd vagrant
+    install_kernel
+    setup_users
 }
+
 install_kernel() {
     local -x MAKE_OPTS='sj4'
+    cd /usr/src/linux
     cp /config .config
     make oldconfig
     make
@@ -21,4 +18,11 @@ install_kernel() {
     grub2-mkconfig -o /boot/grub/grub.cfg
 }
 
+setup_users() {
+    useradd -g users -G wheel,portage,audio,video,usb,cdrom -m vagrant
+    {
+        echo 'root:vagrant'
+        echo 'vagrant:vagrant'
+    } | chpasswd
+}
 main "$@"
